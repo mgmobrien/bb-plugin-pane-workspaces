@@ -1,9 +1,10 @@
 /* Shared, namespaced accent tokens. Either plugin works on its own.
-   Relative color clamps keep very dark/light custom accents legible. */
+   Relative color clamps keep very dark/light custom accents legible.
+   Light theme keeps the accent's own chroma and only lowers lightness (0.9.4/0.2.6). */
 html {
   --bb-workspace-tint: var(--bb-workspace-accent, var(--success));
-  --bb-workspace-foreground: light-dark(oklch(from color-mix(in oklab, var(--bb-workspace-tint) 45%, var(--ink)) min(l, 0.50) c h), oklch(from var(--bb-workspace-tint) max(l, 0.70) c h));
-  --bb-workspace-indicator: light-dark(oklch(from color-mix(in oklab, var(--bb-workspace-tint) 60%, var(--ink)) min(l, 0.56) c h), oklch(from var(--bb-workspace-tint) max(l, 0.70) c h));
+  --bb-workspace-foreground: light-dark(oklch(from var(--bb-workspace-tint) min(l, 0.50) c h), oklch(from var(--bb-workspace-tint) max(l, 0.70) c h));
+  --bb-workspace-indicator: light-dark(oklch(from var(--bb-workspace-tint) min(l, 0.56) c h), oklch(from var(--bb-workspace-tint) max(l, 0.70) c h));
 }
 
 /* Attribute-only rules intentionally reach the host heading outside plugin scope.
