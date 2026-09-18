@@ -19,7 +19,7 @@ Matching restored panes resume saving automatically. If the live layout differs 
 
 ## Workspace colors
 
-The active project's sidebar heading has a colored icon, title, background and rails; inactive headings remain distinguishable. Install [Compact UI](https://github.com/mgmobrien/bb-plugin-compact-ui) separately to configure the shared accent from its sidebar page or Settings. Without it, Workspaces uses bb's native green.
+The active project's sidebar heading has a colored icon, title, background and rails; inactive headings remain distinguishable. Install [Compact UI](https://github.com/mgmobrien/bb-plugin-compact-ui) separately to configure the shared accent from its sidebar page or Settings. Without it, Workspaces uses bb's native green. The header gradient and editor-focus glow work with either one thread pane or a split layout.
 
 ## Install from source
 

@@ -81,3 +81,21 @@ html[data-bb-accent-rails="off"] [data-sidebar-sticky-tier="label"][data-workspa
 [data-sidebar-trailing-controls]:has(> [data-workspace-mount]) > [data-sidebar-collapsed-activity-edge] {
   right: 1.75rem;
 }
+
+/* Single-pane parity (bb 0.42.1). With one pane open there is no
+   [data-split-pane-id] wrapper (SplitThreadArea.tsx:603-625); the thread
+   header and [data-thread-window] are direct children of SecondaryPanelLayout's
+   [data-conversation-collapsed] main slot (SecondaryPanelLayout.tsx:298-311).
+   The single pane is always the focused pane, so it takes the focused header
+   gradient and the editor focus glow. The ancestor guard keeps split panes,
+   and the secondary panel that also emits pane markers, on the rules above. */
+[data-conversation-collapsed]:not([data-split-pane-id] *):has(> [data-thread-window]) > header:has(> [data-testid="app-page-header-content-row"]) {
+  background-image: linear-gradient(color-mix(in oklab, var(--bb-workspace-tint) 30%, transparent),
+                                    color-mix(in oklab, var(--bb-workspace-tint) 20%, transparent));
+}
+[data-conversation-collapsed]:not([data-split-pane-id] *):has(> header > [data-testid="app-page-header-content-row"]) > [data-thread-window] [data-promptbox-editor-scroll]:has([data-promptbox-editor-content] [contenteditable="true"]:focus) {
+  border-radius: calc(var(--radius) + 3px) calc(var(--radius) + 3px) 0 0;
+  background-image: none;
+  box-shadow: inset 0 0 14px color-mix(in oklab, var(--bb-workspace-tint) 14%, transparent),
+              inset 0 0 0 1px color-mix(in oklab, var(--bb-workspace-tint) 28%, transparent);
+}
