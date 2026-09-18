@@ -2,9 +2,9 @@
 
 Return to each project with its saved arrangement of thread panes.
 
-![Workspaces picker showing sample projects, keyboard shortcuts and saved-layout controls](docs/screenshots/workspace-picker.png)
+<img src="docs/screenshots/workspace-colors-dark.png" alt="Dark bb sidebar with six color-coded demo projects and Kestrel marked as the active workspace" width="319">
 
-*The workspace picker with sample projects. Open it from the sidebar footer or command palette.*
+*Demo projects in dark mode with Workspaces 0.2.6 and Compact UI 0.9.5. Compact UI supplies per-project colors, group shading and thread tint; Workspaces marks the active project with a colored heading and rails.*
 
 ## Use Workspaces
 
