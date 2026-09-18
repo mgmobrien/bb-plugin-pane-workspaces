@@ -1,3 +1,11 @@
-Save a separate arrangement of bb thread panes per project. Switch from project headings, keyboard shortcuts or the workspace picker.
+## Return to your project
 
-Layouts are browser-local. Stock bb reloads to apply them; hosts with a split-layout API can switch instantly. The plugin includes a previous-layout recovery copy and active-workspace styling. See README.md for installation, compatibility dependencies and limitations.
+Switch projects from the sidebar, a keyboard shortcut or the Workspaces picker. Each project remembers its arrangement of thread panes. Open Workspaces from the sidebar or its Settings page to select a project or recover a previous layout.
+
+## Saved layouts and recovery
+
+Layouts stay in this browser's local storage. Stock bb reloads once per switch; compatible hosts with the experimental layout API can switch without a reload. One previous revision is available per project. When live panes differ from a saved workspace, restore the saved panes or keep the current arrangement.
+
+## Requirements
+
+Requires bb 0.42+. Uses internal host interfaces, so bb updates may require plugin updates. The thread index covers up to 400 unarchived threads. Layouts do not sync across devices. No external service or account is required. Compact UI is optional and adds controls for the shared workspace accent.

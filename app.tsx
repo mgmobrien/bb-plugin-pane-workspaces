@@ -12,6 +12,7 @@ import { definePluginApp, useRealtime, useRpc } from "@get-bb/plugin-sdk/app";
 import type { IndexProject, IndexThread, rpcContract } from "./server";
 import {
   projectOf,
+  isWorkspaceControlLayout,
   readHostLayout,
   readStore,
   routeFor,
@@ -46,7 +47,7 @@ const useOptionalHostSplitLayout: SplitLayoutHook = useHostSplitLayout ?? (() =>
 /** Save the on-screen layout under the active project (deriving one if unset). */
 function snapshot(): void {
   const layout = readHostLayout();
-  if (!layout) return;
+  if (!layout || isWorkspaceControlLayout(layout, window.location.pathname)) return;
   const store = readStore();
   const active = store.active ?? projectOf(layout);
   if (!active) return;
@@ -132,7 +133,7 @@ function useWorkspaces() {
     // A clicked row supplies authoritative ids even before the RPC index loads.
     if (!threadId && (!ready || error)) return;
     const current = readStore();
-    if (!recovery && current.active === projectId && canSave(projectId)) {
+    if (!recovery && current.active === projectId && canSave(projectId) && !isWorkspaceControlLayout(readHostLayout(), window.location.pathname)) {
       return;
     }
     snapshot();
@@ -175,7 +176,7 @@ function useWorkspaces() {
     setStore(next);
   };
 
-  const savingPaused = needsSavingChoice();
+  const savingPaused = needsSavingChoice() && !isWorkspaceControlLayout(readHostLayout(), window.location.pathname);
   const useCurrentLayout = () => {
     if (!store.active) return;
     allowSaving(store.active);
@@ -309,7 +310,16 @@ function WorkspaceOverlay() {
   </>;
 }
 
+function WorkspacePage() {
+  return <div className="mx-auto w-full max-w-3xl space-y-4 p-5">
+    <p className="text-sm text-muted-foreground">Choose a project to restore its saved panes. Your saved arrangement is kept while you browse these controls.</p>
+    <Switcher dismiss={() => {}} />
+  </div>;
+}
+
 export default definePluginApp((app) => {
+  app.slots.settingsSection({ id: "workspaces", title: "Saved workspaces", component: WorkspacePage });
+  app.slots.navPanel({ id: "workspaces", title: "Workspaces", icon: "GridView", path: "workspaces", component: WorkspacePage });
   // Keep the active project's saved layout current with whatever is on screen.
   app.contentScripts.register({
     id: "layout-watch",

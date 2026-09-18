@@ -184,3 +184,11 @@ export function selectThread(layout: HostLayout, projectId: string, threadId: st
       : node;
   return { ...layout, root: replace(layout.root), focusedPaneId };
 }
+
+/** Management pages are transient controls, not a project's saved work. */
+export function isWorkspaceControlLayout(layout: HostLayout | null, pathname = ''): boolean {
+  const ids = ['workspaces', 'compact-panes', 'thread-nicknames'];
+  if (ids.some(id => pathname.replace(/\/+$/, '') === `/settings/plugins/${id}`)) return true;
+  return !!layout && panesOf(layout.root).some(({ content }) =>
+    (content.kind === 'plugin-panel' || content.kind === 'plugin-detail') && ids.includes(content.pluginId));
+}

@@ -1,5 +1,5 @@
 /* Shared, namespaced accent tokens. Either plugin works on its own.
-   Relative colour clamps keep very dark/light custom accents legible. */
+   Relative color clamps keep very dark/light custom accents legible. */
 html {
   --bb-workspace-tint: var(--bb-workspace-accent, var(--success));
   --bb-workspace-foreground: light-dark(oklch(from color-mix(in oklab, var(--bb-workspace-tint) 45%, var(--ink)) min(l, 0.50) c h), oklch(from var(--bb-workspace-tint) max(l, 0.70) c h));
@@ -9,19 +9,43 @@ html {
 /* Attribute-only rules intentionally reach the host heading outside plugin scope.
  * Keep bb's sticky positioning and both shield pseudo-elements intact. */
 [data-sidebar-sticky-tier="label"][data-workspace-active] {
+  /* Left rail, right rail, then the tinted fill. */
   background-image:
+    linear-gradient(var(--bb-workspace-indicator),
+                    var(--bb-workspace-indicator)),
     linear-gradient(var(--bb-workspace-indicator),
                     var(--bb-workspace-indicator)),
     linear-gradient(color-mix(in oklab, var(--bb-workspace-tint) 13%, transparent),
                     color-mix(in oklab, var(--bb-workspace-tint) 13%, transparent));
-  background-size: 2.5px calc(100% - 6px), 100% 100%;
-  background-position: left center, 0 0;
+  background-size: 2.5px calc(100% - 6px), 2.5px calc(100% - 6px), 100% 100%;
+  background-position: left center, right center, 0 0;
   background-repeat: no-repeat;
 }
 
 [data-sidebar-sticky-tier="label"][data-workspace-active] > span > span[title] {
   color: var(--bb-workspace-foreground);
   font-weight: 600;
+}
+
+/* Non-active project headings take the accent as text only, so headings read
+   apart from thread rows; background, rail and icon stay with the active one.
+   Specificity (0,7,3) outranks Compact UI's full-ink heading rule.
+   0.2.3: honours Compact UI's Project headings toggle, which sets
+   html[data-bb-accent-headings="off"] while off. Absent attribute = on, so
+   the rule is unchanged when Workspaces runs alone. */
+html:not([data-bb-accent-headings="off"]) [data-sidebar-sticky-stack] [data-sidebar-sticky-project-item][data-sidebar-project-id] [data-sidebar-sticky-tier="label"]:not([data-workspace-active]) > span > span[title] {
+  color: var(--bb-workspace-foreground);
+}
+
+/* 0.2.3: Compact UI's Active workspace rails toggle. With the rails off the
+   active heading keeps only the 13% fill layer; the grid icon and the
+   heading text are unaffected. Specificity (0,4,1) outranks the rule above. */
+html[data-bb-accent-rails="off"] [data-sidebar-sticky-tier="label"][data-workspace-active] {
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--bb-workspace-tint) 13%, transparent),
+                    color-mix(in oklab, var(--bb-workspace-tint) 13%, transparent));
+  background-size: 100% 100%;
+  background-position: 0 0;
 }
 
 [data-workspace-grid][aria-pressed="true"] {

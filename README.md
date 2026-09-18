@@ -1,20 +1,29 @@
 # Workspaces for bb
 
-Save and restore a separate arrangement of thread panes for each project in [bb](https://github.com/get-bb/bb).
+Return to each project with its saved arrangement of thread panes.
 
-## Use
+## Use Workspaces
 
-- Click a project name or its grid icon in the sidebar to restore that workspace.
-- Plain-click a thread in another project to open that project’s workspace with the thread selected. An existing pane receives focus; otherwise the focused pane is replaced.
-- Use **⌘⌥1–9** on macOS or **Ctrl+Alt+1–9** elsewhere. Numbers follow visible sidebar project order.
-- Open **Workspaces: switch workspace** in the command palette, or use the sidebar footer grid.
-- Cmd/Ctrl-click keeps bb’s ordinary split-opening behaviour, including deliberately mixed-project workspaces.
+- Open **Workspaces** from the sidebar or Settings → Plugins → Workspaces.
+- Click a project heading or its grid button, use the footer picker, or run **Workspaces: switch workspace** from the command palette.
+- Press **⌘⌥1–9** on Mac or **Ctrl+Alt+1–9** elsewhere. Numbers follow sidebar project order. Shortcuts are suppressed while typing, in terminal/editor inputs, during composition, and in modal dialogs.
+- Select a thread in another project to restore that project's workspace with the thread focused. Same-project clicks and Cmd/Ctrl-click keep bb's normal behavior, including mixed-project layouts.
 
-The plugin also adds an active-project rail and icon, shaded pane headers and a subtle glow inside the focused composer. Green follows bb’s theme by default. An optional companion can set the namespaced `--bb-workspace-accent` CSS variable; it is not required to use this plugin.
+Layouts are stored in this browser's local storage, not on the bb server. They do not sync across devices. Stock bb reloads the window when switching; hosts exposing the experimental split-layout hook can switch without a reload. On stock bb, navigate to another project before double-clicking a thread to rename it.
+
+## Protect and recover layouts
+
+Matching restored panes resume saving automatically. If the live layout differs from a saved workspace, choose **Restore saved panes** or **Keep current panes**. Management pages for Workspaces, Compact UI and Thread nicknames are excluded from snapshots, including their Settings pages.
+
+**Restore previous layout** recovers one previous revision per project. Later changes can replace that revision; this is not an unlimited backup history. **Forget saved layout** resets the saved arrangement. Threads confirmed deleted by the index are removed when restoring.
+
+## Workspace colors
+
+The active project's sidebar heading has a colored icon, title, background and rails; inactive headings remain distinguishable. Install [Compact UI](https://github.com/mgmobrien/bb-plugin-compact-ui) separately to configure the shared accent from its sidebar page or Settings. Without it, Workspaces uses bb's native green.
 
 ## Install from source
 
-Requires bb 0.42 or later and Node/npm. This snapshot was exercised with bb 0.42.1 and plugin SDK 0.4.47; it depends on internal host details described below.
+Requires bb 0.42+ and plugin SDK 0.4.47. Developed against bb 0.42.1.
 
 ```sh
 git clone https://github.com/mgmobrien/bb-plugin-workspaces.git
@@ -25,35 +34,14 @@ npm run build
 bb plugin install .
 ```
 
-Keep this directory at a durable location: a local-path plugin installation reads its source here. Build output and dependencies are generated locally and are not committed.
-
-## Storage and recovery
-
-Layouts are stored in the browser profile’s local storage, keyed by project. They are **not** stored in the plugin’s server database and are not synchronized between machines. The backend serves an index of projects and up to 400 unarchived threads and signals index changes; it does not copy conversation bodies.
-
-The plugin retains one previous layout per project. **Restore previous layout** restores that recovery copy. This is a single revision, not an unlimited backup history.
-
-When the live layout does not match the saved arrangement, a prompt offers **Restore saved panes** or **Keep current panes**. Matching restores resume saving automatically. These checks do not protect against every possible host failure after acceptance.
+Keep the source directory in a durable location. Disable the plugin in bb to remove its controls; browser-local saved layouts remain.
 
 ## Compatibility and limitations
 
-- **Stock bb reloads the renderer on a workspace switch.** The plugin writes bb’s persisted layout before the reload. A host exposing the proposed `experimental_useSplitLayout` hook can switch without reloading; this is not part of the published SDK used here.
-- Sidebar integration uses bb’s DOM attributes; layout restoration and acceptance use internal storage, routes and rendered pane markers. Host updates can require plugin changes.
-- Before its own desktop reloads, the plugin attempts to hide native browser views using tab IDs from persisted fixed-panel records. Unrecognized records are skipped with a warning; a failed hide call stops the switch. This does not cover reloads initiated elsewhere or views absent from readable records.
-- The backend index is capped at 400 unarchived threads. Layout sanitization treats threads absent from the resolved index as unavailable, so installations above that limit need additional care before relying on saved layouts for older threads.
-- Keyboard shortcuts yield to editable fields, composing/repeated events and modal/editor guards. They avoid default bb bindings but cannot inspect custom keybinding overrides.
-- On stock bb, navigate to a foreign project before double-clicking a thread to rename it: the first click’s reload interrupts the double-click sequence.
-- **Forget saved layout** removes a project’s current saved arrangement. The previous-revision copy can help recover it, but later writes may replace that copy.
+Workspaces uses internal host storage, sidebar attributes and the desktop browser-visibility bridge. Future bb changes may require updates. The thread index currently covers up to 400 unarchived threads. Local layouts are not portable backups.
 
-## Upstream motivation
+Before a stock desktop reload, the plugin hides native browser views whose IDs it can read from persisted panel records. It preserves browser tabs and URLs. Unknown records are skipped with a warning; a failed visibility call stops the reload and reports an error. Views absent from readable records cannot be discovered this way. The experimental instant-switch path uses normal host cleanup.
 
-Two host changes would remove workarounds in this plugin:
+The implementation and [upstream investigation](docs/upstream-notes.md) explain the host integrations. Third-party scaffold notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-1. A supported API to read and replace a complete split layout without reloading.
-2. Native browser-view cleanup on every full host-renderer navigation, not just explicit menu/keyboard reloads.
-
-See [the implementation notes](docs/upstream-notes.md) for the relevant source paths and verification boundaries. The proposed host patches are separate from this plugin.
-
-## Project
-
-Built for Matt’s bb workflow with assistance from **MattBot — Matt’s AI assistant (GPT-6 Astra today)**. This repository contains plugin source, not Matt’s projects, conversations or saved layouts.
+Built with **MattBot — Matt’s AI assistant (GPT-6 Astra today)**.
