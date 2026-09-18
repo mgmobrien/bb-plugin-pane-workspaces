@@ -2,6 +2,10 @@
 
 Return to each project with its saved arrangement of thread panes.
 
+![Workspaces picker showing sample projects, keyboard shortcuts and saved-layout controls](docs/screenshots/workspace-picker.png)
+
+*The workspace picker with sample projects. Open it from the sidebar footer or command palette.*
+
 ## Use Workspaces
 
 - Open **Workspaces** from the sidebar or Settings → Plugins → Workspaces.
