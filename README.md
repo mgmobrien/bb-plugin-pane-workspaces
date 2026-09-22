@@ -1,6 +1,6 @@
 # Workspaces for bb
 
-Return to each project with its saved arrangement of thread panes.
+Switch complete pane arrangements for projects, thread groups and personal threads.
 
 <img src="docs/screenshots/workspace-colors-dark.png" alt="Dark bb sidebar with six color-coded demo projects and Kestrel marked as the active workspace" width="319">
 
@@ -11,7 +11,9 @@ Return to each project with its saved arrangement of thread panes.
 - Open **Workspaces** from the sidebar or Settings → Plugins → Workspaces.
 - Click a project heading or its grid button, use the footer picker, or run **Workspaces: switch workspace** from the command palette.
 - Press **⌘⌥1–9** on Mac or **Ctrl+Alt+1–9** elsewhere. Numbers follow sidebar project order. Shortcuts are suppressed while typing, in terminal/editor inputs, during composition, and in modal dialogs.
-- Select a thread in another project to restore that project's workspace with the thread focused. Same-project clicks and Cmd/Ctrl-click keep bb's normal behavior, including mixed-project layouts.
+- Create a thread workspace with its row’s grid button or **Workspaces: make current thread a workspace**. The starting layout contains the anchor and up to five direct children; it does not capture unrelated current panes. Switch back with its persistent icon or searchable workspace picker.
+- Plain-clicking a member of a thread workspace switches to its deepest containing workspace by default. Turn off **Clicking a thread in a workspace switches to it** for ordinary within-project navigation. Cross-project clicks still switch to that project’s remembered workspace. Modified clicks keep bb’s native behavior.
+- **Threads (no project)** has its own workspace and can contain thread workspaces. Its heading grid, picker and page switch the whole arrangement; it has no digit hotkey.
 
 Layouts are stored in this browser's local storage, not on the bb server. They do not sync across devices. Stock bb reloads the window when switching; hosts exposing the experimental split-layout hook can switch without a reload. On stock bb, navigate to another project before double-clicking a thread to rename it.
 
@@ -19,22 +21,29 @@ Layouts are stored in this browser's local storage, not on the bb server. They d
 
 Matching restored panes resume saving automatically. If the live layout differs from a saved workspace, choose **Restore saved panes** or **Keep current panes**. Management pages for Workspaces, Compact UI and Thread nicknames are excluded from snapshots, including their Settings pages.
 
-**Restore previous layout** recovers one previous revision per project. Later changes can replace that revision; this is not an unlimited backup history. **Forget saved layout** resets the saved arrangement. Threads confirmed deleted by the index are removed when restoring.
+**Restore previous layout** recovers one previous revision per workspace. Later changes can replace that revision; this is not an unlimited backup history. **Forget saved layout** resets the saved arrangement. Thread-workspace cleanup requires repeated index misses and server confirmation of deletion or archiving; a missing paginated result alone does not remove a workspace.
 
 ## Workspace colors
 
 The active project's sidebar heading has a colored icon, title, background and rails; inactive headings remain distinguishable. Install [Compact UI](https://github.com/mgmobrien/bb-plugin-compact-ui) separately to configure the shared accent from its sidebar page or Settings. Without it, Workspaces uses bb's native green. The header gradient and editor-focus glow work with either one thread pane or a split layout. Compact UI’s Pane header color and Text input glow toggles can turn those accent treatments off independently.
 
+## Plugin identity and stored layouts
+
+The plugin ID is now **pane-workspaces**; its display name remains **Workspaces**. This resolves a marketplace ID collision with a different plugin. The browser storage keys remain `workspaces.v1` and `workspaces.v2` so existing local layouts can be migrated and reused. Disable the previous `workspaces` installation before installing this package; do not run both copies together. GitHub redirects the former repository URL, but the package identity has changed.
+
+Workspace identity stays attached to a thread ID when it moves or is re-parented. Active workspace selection is per window; saved arrangements remain browser-local. Revision checks reject stale saves, but this is not cross-device synchronization.
+
 ## Install from source
 
-Requires bb 0.42+ and plugin SDK 0.4.47. Developed against bb 0.42.1.
+Requires bb 0.42+ and plugin SDK 0.4.47.
 
 ```sh
-git clone https://github.com/mgmobrien/bb-plugin-workspaces.git
-cd bb-plugin-workspaces
+git clone https://github.com/mgmobrien/bb-plugin-pane-workspaces.git
+cd bb-plugin-pane-workspaces
 npm ci
 npm run typecheck
 npm run build
+npm test
 bb plugin install .
 ```
 

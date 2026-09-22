@@ -1,6 +1,6 @@
 {
-  "name": "bb-plugin-workspaces",
-  "version": "0.2.6",
+  "name": "bb-plugin-pane-workspaces",
+  "version": "0.3.5",
   "type": "module",
   "engines": {
     "bb": ">=0.42",
@@ -8,7 +8,7 @@
   },
   "bb": {
     "name": "Workspaces",
-    "description": "Flip between projects and keep a saved arrangement of thread panes for each.",
+    "description": "Saved pane arrangements per project and per thread: one click each, whole-arrangement switches.",
     "branding": {
       "icon": "GridView"
     },
@@ -48,11 +48,13 @@
     "clsx": "^2.1.1",
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.4.0",
-    "vaul": "^1.1.2"
+    "vaul": "^1.1.2",
+    "jsdom": "29.0.1"
   },
-  "description": "One pane layout per project: pick a project, get the threads you had open there.",
+  "description": "Saved pane arrangements per project and per thread: one click each, whole-arrangement switches.",
   "scripts": {
     "build": "bb plugin build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test test/*.test.ts"
   }
 }

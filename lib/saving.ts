@@ -1,24 +1,26 @@
-import { readHostLayout, readStore, panesOf, routeMatchesLayout, type HostLayout } from "./layout";
+import { readHostLayout, readStore, panesOf, routeMatchesLayout, currentKey, type HostLayout, type WorkspaceKey } from "./layout";
 
-const HANDOFF = "workspaces.pending-layout.v1";
+// 0.3.0: acceptance is keyed by the ACTIVE workspace key (`project:` or
+// `thread:`), not the project id. The semantics are unchanged from 0.2.x.
+const HANDOFF = "workspaces.pending-layout.v2";
 const EVENT = "workspaces:saving-changed";
-type SavingState = { projectId: string | null; documentId?: string; choiceRequired?: boolean };
+type SavingState = { key: WorkspaceKey | null; documentId?: string; choiceRequired?: boolean };
 type SavingWindow = Window & { __bbWorkspacesSaving?: SavingState };
 function state(): SavingState {
   const win = window as SavingWindow;
-  const value = win.__bbWorkspacesSaving ??= { projectId: null };
+  const value = win.__bbWorkspacesSaving ??= { key: null };
   value.documentId ??= window.crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
   return value;
 }
-export function canSave(projectId: string): boolean { return state().projectId === projectId; }
+export function canSave(key: WorkspaceKey): boolean { return state().key === key; }
 export function needsSavingChoice(): boolean { return state().choiceRequired === true; }
-export function allowSaving(projectId: string): void {
+export function allowSaving(key: WorkspaceKey): void {
   window.sessionStorage.removeItem(HANDOFF);
-  Object.assign(state(), { projectId, choiceRequired: false });
+  Object.assign(state(), { key, choiceRequired: false });
   window.dispatchEvent(new Event(EVENT));
 }
-export function prepareLayoutHandoff(projectId: string, layout: HostLayout): void {
-  window.sessionStorage.setItem(HANDOFF, JSON.stringify({ projectId, layout, sourceDocument: state().documentId }));
+export function prepareLayoutHandoff(key: WorkspaceKey, layout: HostLayout): void {
+  window.sessionStorage.setItem(HANDOFF, JSON.stringify({ key, layout, sourceDocument: state().documentId }));
 }
 function canonical(value: unknown): string {
   return JSON.stringify(value, (_key, item) => item && typeof item === "object" && !Array.isArray(item)
@@ -42,22 +44,23 @@ function rendered(live: HostLayout): boolean {
  * later visit with no handoff. Never accept a handoff in its outgoing document. */
 export function acceptLayoutHandoff(): void {
   const store = readStore();
-  const active = store.active;
+  const active = currentKey(store);
+  const project = store.active;
   const live = readHostLayout();
   let outgoing = false;
   const raw = window.sessionStorage.getItem(HANDOFF);
   if (raw) {
     try {
       const pending = JSON.parse(raw);
-      if (pending?.projectId !== active) window.sessionStorage.removeItem(HANDOFF);
+      if (pending?.key !== active) window.sessionStorage.removeItem(HANDOFF);
       else outgoing = pending.sourceDocument === state().documentId;
     } catch {
       console.warn("Could not read workspace restoration handoff");
       window.sessionStorage.removeItem(HANDOFF);
     }
   }
-  const restored = !!active && samePanes(live, store.layouts[active]) && !!live &&
-    (panesOf(live.root).length > 1 || routeMatchesLayout(window.location.pathname, live, active));
+  const restored = !!active && !!project && samePanes(live, store.layouts[active]) && !!live &&
+    (panesOf(live.root).length > 1 || routeMatchesLayout(window.location.pathname, live, project));
   if (active && !canSave(active) && !outgoing && restored && live && rendered(live)) allowSaving(active);
   // No prompt while an ordinary restored layout is waiting for its first paint.
   // A different live layout remains protected and visibly requires a choice.

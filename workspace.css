@@ -28,6 +28,19 @@ html {
   font-weight: 600;
 }
 
+/* 0.3.4: the built-in Threads section (proj_personal) as a workspace. Its
+   heading has no [data-sidebar-project-id] ancestor, so Compact UI 0.7.4's
+   built-in heading rule (html[..] [stack] > [group-content] > div > [group] >
+   [tier] > span > span[title], (0,6,4)) would outrank the (0,3,2) active title
+   rule above. Same direct-child path, attribute repeated: (0,8,3). The rails
+   and fill above are attribute-only and already reach this heading. Per-project
+   accents are set inline on project items; the section inherits the window
+   fallback (--bb-workspace-accent on html, else --success). */
+[data-sidebar-sticky-stack] > [data-sidebar="group-content"] > div > [data-sidebar-sticky-group] > [data-sidebar-sticky-tier="label"][data-workspace-active][data-workspace-active][data-workspace-active] > span > span[title] {
+  color: var(--bb-workspace-foreground);
+  font-weight: 600;
+}
+
 /* Non-active project headings take the accent as text only, so headings read
    apart from thread rows; background, rail and icon stay with the active one.
    Specificity (0,7,3) outranks Compact UI's full-ink heading rule.
@@ -109,4 +122,85 @@ html:not([data-bb-accent-input="off"]) [data-conversation-collapsed]:not([data-s
   background-image: none;
   box-shadow: inset 0 0 14px color-mix(in oklab, var(--bb-workspace-tint) 14%, transparent),
               inset 0 0 0 1px color-mix(in oklab, var(--bb-workspace-tint) 28%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+ * 0.3.0: thread workspaces.
+ *
+ * Row control. The grid button is mounted at the end of the row's title span
+ * (a[data-sidebar-thread-id] + span), left of bb's status/hover-action slot.
+ * Rows without a workspace reveal it on row hover / focus only; workspace rows
+ * keep it visible. The row container carries data-workspace-thread and, for
+ * the workspace on screen, data-workspace-active-thread. Plain :hover is used
+ * on purpose (Tailwind's hover: variants sit behind @media (hover: hover)). */
+[data-workspace-thread="candidate"] [data-workspace-thread-button] {
+  opacity: 0;
+  transition: opacity 0ms;
+}
+[data-workspace-thread="candidate"]:is(:hover, :has(:focus-visible)) [data-workspace-thread-button],
+[data-workspace-thread="candidate"] [data-workspace-thread-button]:focus-visible {
+  opacity: 1;
+}
+[data-workspace-thread="workspace"] [data-workspace-thread-button] {
+  opacity: 1;
+}
+[data-workspace-thread-button][data-state="active"] {
+  color: var(--bb-workspace-indicator);
+}
+
+/* Active thread-workspace row: the same treatment as the active project
+ * heading (left + right rails, 13% fill, accent semibold title), on the row
+ * container so bb's own selection surface and sticky shields are untouched.
+ * The attribute is repeated to outrank Compact UI's thread-title tint
+ * (html[..]:not([..]) [..] a[..]:not([..]) + span > span[title] = (0,6,4))
+ * and its group washes; this title rule is (0,7,4). */
+[data-workspace-active-thread] {
+  background-image:
+    linear-gradient(var(--bb-workspace-indicator), var(--bb-workspace-indicator)),
+    linear-gradient(var(--bb-workspace-indicator), var(--bb-workspace-indicator)),
+    linear-gradient(color-mix(in oklab, var(--bb-workspace-tint) 13%, transparent),
+                    color-mix(in oklab, var(--bb-workspace-tint) 13%, transparent));
+  background-size: 2.5px calc(100% - 6px), 2.5px calc(100% - 6px), 100% 100%;
+  background-position: left center, right center, 0 0;
+  background-repeat: no-repeat;
+}
+/* 0.3.4: :is() keeps the specificity and also reaches rows in the built-in Threads section. */
+html:not([data-bb-accent-headings="off"]) :is([data-sidebar-project-id], [data-sidebar-sticky-group]) [data-workspace-active-thread][data-workspace-active-thread] > a[data-sidebar-thread-id] + span > span[title] {
+  color: var(--bb-workspace-foreground);
+  font-weight: 600;
+}
+/* Compact UI's Active workspace rails toggle: fill only, like the heading. */
+html[data-bb-accent-rails="off"] [data-workspace-active-thread] {
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--bb-workspace-tint) 13%, transparent),
+                    color-mix(in oklab, var(--bb-workspace-tint) 13%, transparent));
+  background-size: 100% 100%;
+  background-position: 0 0;
+}
+
+/* Switch preview (0.3.2): "who is in this workspace?". Hovering a thread
+ * workspace's anchor row (anywhere on it) or its icon marks the anchor plus
+ * every rendered descendant at any depth; hovering a project heading's grid
+ * button marks the whole group. Marked rows take an opaque 22% wash (Compact
+ * UI's group hover is 7%, its resting shade 4%), a continuous 3px left rail,
+ * and the anchor title the accent foreground, semibold. Sticky tiers and their
+ * ::before/::after shields take the same wash so a stuck heading/parent row
+ * reads as part of the group. Gated by Compact UI's Hover wash toggle.
+ * Specificity: the preview attribute is repeated so each rule reaches
+ * (0,11,1)+, above Compact UI's strongest competing rule (0,9,3). 0.3.4: the
+ * group selector is :is(project item, sticky group) so the built-in Threads
+ * section previews too; :is() keeps the specificity. */
+html:not([data-bb-accent-hover="off"]) :is([data-sidebar-project-id], [data-sidebar-sticky-group]) [data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview],
+html:not([data-bb-accent-hover="off"]) :is([data-sidebar-project-id], [data-sidebar-sticky-group]) [data-sidebar-sticky-tier][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview]::before,
+html:not([data-bb-accent-hover="off"]) :is([data-sidebar-project-id], [data-sidebar-sticky-group]) [data-sidebar-sticky-tier][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview]::after {
+  background-color: color-mix(in oklab, var(--bb-workspace-tint) 22%, var(--sidebar));
+}
+html:not([data-bb-accent-hover="off"]) :is([data-sidebar-project-id], [data-sidebar-sticky-group]) [data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview][data-workspace-preview] {
+  box-shadow: inset 3px 0 0 0 var(--bb-workspace-indicator);
+}
+/* Anchor title: (0,11,4) outranks Compact UI's thread tint (0,6,4). */
+html:not([data-bb-accent-hover="off"]) :is([data-sidebar-project-id], [data-sidebar-sticky-group]) [data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor] > a[data-sidebar-thread-id] + span > span[title],
+html:not([data-bb-accent-hover="off"]) :is([data-sidebar-project-id], [data-sidebar-sticky-group]) [data-sidebar-sticky-tier="label"][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor][data-workspace-preview-anchor] > span > span[title] {
+  color: var(--bb-workspace-foreground);
+  font-weight: 600;
 }

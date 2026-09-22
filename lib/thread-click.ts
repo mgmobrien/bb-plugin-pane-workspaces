@@ -1,12 +1,27 @@
+import { linkProjectId } from "./sidebar.ts";
+
 const THREAD = "a[data-sidebar-thread-id]";
 // Mirrors bb ThreadRow.tsx SIDEBAR_TITLE_DOUBLE_CLICK_MS (module-private).
 const DOUBLE_CLICK_MS = 400;
 
-/** Suppress Router navigation, while retaining bb's own click/rename handler. */
+/**
+ * Suppress Router navigation, while retaining bb's own click/rename handler.
+ * Two intercepts, both plain left-click only (Cmd/Ctrl/Alt/Shift and other
+ * buttons are never touched):
+ *  - cross-project: the row's project differs from the active one → switch to
+ *    that project's remembered workspace with the thread selected (0.2.x);
+ *  - member click (0.3.2): same project, and `memberTarget` names a thread
+ *    workspace the clicked thread belongs to that is not on screen → switch to
+ *    it with the thread selected. When it returns null the click is bb's.
+ * 0.3.4: personal threads (`/threads/<id>`, bb's built-in Threads section)
+ * take the same two paths as project `proj_personal`; before 0.3.4 they were
+ * unmatched and always fell through to bb's navigation.
+ */
 export function watchThreadClicks(
   doc: Document,
   activeProject: () => string | null,
-  activate: (projectId: string, threadId: string) => void,
+  activate: (projectId: string, threadId: string, key?: string) => void,
+  memberTarget: (projectId: string, threadId: string) => string | null = () => null,
 ): () => void {
   const links = new Set<HTMLAnchorElement>();
   const win = doc.defaultView!;
@@ -17,13 +32,21 @@ export function watchThreadClicks(
     const link = event.currentTarget as HTMLAnchorElement;
     if (link.parentElement?.querySelector('input[aria-label="Thread name"]')) return;
     const url = new URL(link.href, doc.baseURI);
-    const match = /^\/projects\/([^/]+)\/threads\/([^/]+)\/?$/.exec(url.pathname);
-    if (url.origin !== new URL(doc.baseURI).origin || !match || match[2] !== link.dataset.sidebarThreadId) return;
-    const [, projectId, threadId] = match;
+    if (url.origin !== new URL(doc.baseURI).origin) return;
+    const projectId = linkProjectId(link);
+    const threadId = link.dataset.sidebarThreadId;
+    if (!projectId || !threadId) return;
     const now = Date.now();
     const doubleClick = last?.threadId === threadId && now - last.at < DOUBLE_CLICK_MS;
     last = { at: now, threadId };
-    if (doubleClick || projectId === activeProject()) return;
+    if (doubleClick) return;
+    if (projectId === activeProject()) {
+      const key = memberTarget(projectId, threadId);
+      if (!key) return;
+      event.preventDefault();
+      activate(projectId, threadId, key);
+      return;
+    }
     // React Router calls bb's onClick even when defaultPrevented, then skips
     // navigation. Do not stop propagation: bb must prime/consume rename clicks.
     event.preventDefault();
